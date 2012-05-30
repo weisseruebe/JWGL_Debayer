@@ -46,7 +46,7 @@ public class Box {
 	public Box(){
 
 		try {
-			tex01=setupTextures("res/weltgrund.png");
+			tex01=setupTextures("res/raw.png");
 			tex02=setupTextures("res/rgb.png");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -61,10 +61,12 @@ public class Box {
 		shader=ARBShaderObjects.glCreateProgramObjectARB();
 
 		if(shader!=0){
-			vertShader=createVertShader("shaders/screen.vert");
-			fragShader=createFragShader("shaders/screen.frag");
-		}
-		else {
+//			vertShader=createVertShader("shaders/screen.vert");
+//			fragShader=createFragShader("shaders/screen.frag");
+			vertShader=createVertShader("shaders/malvar.vs");
+			fragShader=createFragShader("shaders/malvar.fs");
+			
+		} else {
 			useShader=false;
 		}
 
@@ -92,16 +94,17 @@ public class Box {
 		}
 
 		if(useShader){
-			ARBShaderObjects.glUseProgramObjectARB(shader);
+//			ARBShaderObjects.glUseProgramObjectARB(shader);
+			int sampler01 = ARBShaderObjects.glGetUniformLocationARB(shader, "source");
+			int sampler02 = ARBShaderObjects.glGetUniformLocationARB(shader, "sampler02");
+			
+			System.out.println(sampler02);
+			if(sampler01==-1){
+				System.out.println("Error accessing sampler01");
+			}
+			GL11.glBindTexture(GL11.GL_TEXTURE_2D, tex01);
+			ARBShaderObjects.glUniform1iARB(sampler01, 0);
 		}
-		int sampler01 = ARBShaderObjects.glGetUniformLocationARB(shader, "sampler01");
-
-		if(sampler01<1){
-			System.out.println("Error accessing sampler01");
-		}
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, tex01);
-		ARBShaderObjects.glUniform1iARB(sampler01, 0);
-
 	}
 
 	private int setupTextures(String fileName) throws IOException {
@@ -110,16 +113,14 @@ public class Box {
 		tmp.rewind();
 
 		InputStream in = new FileInputStream(fileName);
-		PNGDecoder decoder=new PNGDecoder(in);
-		ByteBuffer data=ByteBuffer.allocateDirect(4*decoder.getWidth()*decoder.getHeight());
+		PNGDecoder decoder = new PNGDecoder(in);
+		ByteBuffer data = ByteBuffer.allocateDirect(4*decoder.getWidth()*decoder.getHeight());
 		decoder.decode(data, decoder.getWidth()*4, PNGDecoder.TextureFormat.RGBA);
 		data.rewind();
 
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, tmp.get(0));
 
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-		
+		setTexFilter(GL11.GL_NEAREST);
 		
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D,0,GL11.GL_RGBA,decoder.getWidth(),decoder.getHeight(),0,GL11.GL_RGBA,GL11.GL_UNSIGNED_BYTE,data);
 		GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 4);
@@ -142,21 +143,23 @@ public class Box {
 			ARBShaderObjects.glUseProgramObjectARB(shader);
 		}
 		GL11.glLoadIdentity();
+//		GL11.glTranslatef(zoom, zoom, -5f);
 		GL11.glTranslatef(0.0f, 0.0f, zoom);
+
 		GL11.glColor3f(1.0f, 1.0f, 1.0f);//white
 
 		GL11.glBegin(GL11.GL_QUADS);
 		
-		GL11.glTexCoord2f(0, 1);
+		GL11.glTexCoord2f(0, 0);
 		GL11.glVertex3f(-1.0f, 1.0f, 0.0f);
 		
-		GL11.glTexCoord2f(1, 1);
+		GL11.glTexCoord2f(1, 0);
 		GL11.glVertex3f(1.0f, 1.0f, 0.0f);
 
-		GL11.glTexCoord2f(1, 0);
+		GL11.glTexCoord2f(1, 1);
 		GL11.glVertex3f(1.0f, -1.0f, 0.0f);
 		
-		GL11.glTexCoord2f(0, 0);
+		GL11.glTexCoord2f(0, 1);
 		GL11.glVertex3f(-1.0f, -1.0f, 0.0f);
 		
 		GL11.glEnd();
@@ -176,7 +179,9 @@ public class Box {
 
 		vertShader=ARBShaderObjects.glCreateShaderObjectARB(ARBVertexShader.GL_VERTEX_SHADER_ARB);
 		//if created, convert the vertex shader code to a String
-		if(vertShader==0){return 0;}
+		if(vertShader==0){
+			return 0;
+		}
 		String vertexCode="";
 		String line;
 		try{
@@ -184,7 +189,7 @@ public class Box {
 			while((line=reader.readLine())!=null){
 				vertexCode+=line + "\n";
 			}
-		}catch(Exception e){
+		} catch(Exception e){
 			System.out.println("Fail reading vertex shading code");
 			return 0;
 		}
@@ -211,7 +216,10 @@ public class Box {
 	private int createFragShader(String filename){
 
 		fragShader=ARBShaderObjects.glCreateShaderObjectARB(ARBFragmentShader.GL_FRAGMENT_SHADER_ARB);
-		if(fragShader==0){return 0;}
+		if(fragShader==0){
+			return 0;
+		}
+
 		String fragCode="";
 		String line;
 		try{
@@ -219,7 +227,7 @@ public class Box {
 			while((line=reader.readLine())!=null){
 				fragCode+=line + "\n";
 			}
-		}catch(Exception e){
+		} catch(Exception e){
 			System.out.println("Fail reading fragment shading code");
 			return 0;
 		}

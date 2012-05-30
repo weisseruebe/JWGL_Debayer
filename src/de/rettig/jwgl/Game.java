@@ -11,17 +11,17 @@ public class Game {
 	}
 
 	private void pollInput() {
+		if (Keyboard.isKeyDown(Keyboard.KEY_A)){
+			box.zoom(-0.1f);
+
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_S)){
+			box.zoom(0.1f);
+
+		}
+
 		while (Keyboard.next()) {
 			if (Keyboard.getEventKeyState()) {
-				if (Keyboard.getEventKey() == Keyboard.KEY_A) {
-					System.out.println("A Key Pressed");
-					box.zoom(-0.1f);
-				}
-				if (Keyboard.getEventKey() == Keyboard.KEY_S) {
-					System.out.println("S Key Pressed");
-					box.zoom(0.1f);
-
-				}
 				if (Keyboard.getEventKey() == Keyboard.KEY_O) {
 					box.setTexFilter(GL11.GL_LINEAR);
 				}
