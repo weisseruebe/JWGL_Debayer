@@ -1,12 +1,16 @@
 package de.rettig.jwgl;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+
+import javax.imageio.ImageIO;
 
 import net.sourceforge.fastpng.PNGDecoder;
 
@@ -15,6 +19,7 @@ import org.lwjgl.opengl.ARBFragmentShader;
 import org.lwjgl.opengl.ARBShaderObjects;
 import org.lwjgl.opengl.ARBVertexShader;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
 
 /**
  * The vertex and fragment shaders are setup when the box object is
@@ -39,20 +44,24 @@ public class Box {
 	private int vertShader=0;
 	private int fragShader=0;
 	private int tex01=0;//first texture
-	private int tex02=0;//second texture
 
 	private float zoom = -5;
 
-	public Box(){
+	private int w;
+	private int h;
+
+	public Box(String texture){
 
 		try {
-			tex01=setupTextures("res/raw.png");
-			tex02=setupTextures("res/rgb.png");
+			tex01 = setupTextures(texture);
+			BufferedImage f = ImageIO.read(new File(texture));
+			w = f.getWidth();
+			h = f.getHeight();
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 
 		/*
 		 * create the shader program. If OK, create vertex
@@ -61,11 +70,11 @@ public class Box {
 		shader=ARBShaderObjects.glCreateProgramObjectARB();
 
 		if(shader!=0){
-//			vertShader=createVertShader("shaders/screen.vert");
-//			fragShader=createFragShader("shaders/screen.frag");
+			//			vertShader=createVertShader("shaders/screen.vert");
+			//			fragShader=createFragShader("shaders/screen.frag");
 			vertShader=createVertShader("shaders/malvar.vs");
 			fragShader=createFragShader("shaders/malvar.fs");
-			
+
 		} else {
 			useShader=false;
 		}
@@ -94,16 +103,16 @@ public class Box {
 		}
 
 		if(useShader){
-//			ARBShaderObjects.glUseProgramObjectARB(shader);
+			ARBShaderObjects.glUseProgramObjectARB(shader);
 			int sampler01 = ARBShaderObjects.glGetUniformLocationARB(shader, "source");
-			int sampler02 = ARBShaderObjects.glGetUniformLocationARB(shader, "sampler02");
-			
-			System.out.println(sampler02);
+
 			if(sampler01==-1){
 				System.out.println("Error accessing sampler01");
 			}
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, tex01);
 			ARBShaderObjects.glUniform1iARB(sampler01, 0);
+
+			setGamma(1.0f);
 		}
 	}
 
@@ -121,7 +130,7 @@ public class Box {
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, tmp.get(0));
 
 		setTexFilter(GL11.GL_NEAREST);
-		
+
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D,0,GL11.GL_RGBA,decoder.getWidth(),decoder.getHeight(),0,GL11.GL_RGBA,GL11.GL_UNSIGNED_BYTE,data);
 		GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 4);
 
@@ -133,7 +142,7 @@ public class Box {
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_MAG_FILTER, filter);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D,GL11.GL_TEXTURE_MIN_FILTER, filter);
 	}
-	
+
 	/*
 	 * If the shader was setup succesfully, we use the shader. Otherwise
 	 * we run normal drawing code.
@@ -142,26 +151,28 @@ public class Box {
 		if(useShader) {
 			ARBShaderObjects.glUseProgramObjectARB(shader);
 		}
-		GL11.glLoadIdentity();
-//		GL11.glTranslatef(zoom, zoom, -5f);
-		GL11.glTranslatef(0.0f, 0.0f, zoom);
 
+		float aspect = (float)h/w;
+
+		GL11.glLoadIdentity();
+		GL11.glTranslatef(0.0f, 0.0f, zoom);
+		GL11.glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
 		GL11.glColor3f(1.0f, 1.0f, 1.0f);//white
 
 		GL11.glBegin(GL11.GL_QUADS);
-		
+
 		GL11.glTexCoord2f(0, 0);
-		GL11.glVertex3f(-1.0f, 1.0f, 0.0f);
-		
+		GL11.glVertex3f(-1.0f, aspect, 0.0f);
+
 		GL11.glTexCoord2f(1, 0);
-		GL11.glVertex3f(1.0f, 1.0f, 0.0f);
+		GL11.glVertex3f(1.0f, aspect, 0.0f);
 
 		GL11.glTexCoord2f(1, 1);
-		GL11.glVertex3f(1.0f, -1.0f, 0.0f);
-		
+		GL11.glVertex3f(1.0f, -aspect, 0.0f);
+
 		GL11.glTexCoord2f(0, 1);
-		GL11.glVertex3f(-1.0f, -1.0f, 0.0f);
-		
+		GL11.glVertex3f(-1.0f, -aspect, 0.0f);
+
 		GL11.glEnd();
 
 		//release the shader
@@ -207,9 +218,21 @@ public class Box {
 		//if zero we won't be using the shader
 		return vertShader;
 	}
-	
+
 	public void zoom(float f){
 		zoom+=f;
+	}
+
+	public void setGamma(float g){
+		GL20.glUseProgram(shader);
+		int gamma = ARBShaderObjects.glGetUniformLocationARB(shader, "gamma");
+		gamma = GL20.glGetUniformLocation(shader, "gamma");
+		if (gamma != -1){
+			System.out.println(gamma);
+			//GL20.glUniform1f(gamma, g);
+			//ARBShaderObjects.glUniform1iARB(gamma, (int)g);
+			GL20.glUniform1f(gamma, g);
+		}
 	}
 
 	//same as per the vertex shader except for method syntax

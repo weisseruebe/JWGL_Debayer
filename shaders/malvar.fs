@@ -1,10 +1,11 @@
 /** Monochrome RGBA or GL_LUMINANCE Bayer encoded texture.*/
 uniform sampler2D source;
+uniform float gamma;
 varying vec4 center;
 varying vec4 yCoord;
 varying vec4 xCoord;
 
-void main(void) {
+void main(void) {	
 	#define fetch(x, y) texture2D(source, vec2(x, y)).r
 	
 	float C = texture2D(source, center.xy).r; // ( 0, 0)
@@ -77,17 +78,8 @@ void main(void) {
 							((alternate.x == 0.0) ?
 								vec3(PATTERN.w, C, PATTERN.z) :
 								vec3(PATTERN.yx, C));
+	gl_FragColor = pow(gl_FragColor,vec4(gamma,gamma,gamma,1.0));
 	
-	//gl_FragColor.rgb = (alternate.y == 0.0) ?
-	//						((alternate.x == 0.0) ?
-	//							vec3(1,0,0) :
-	//							vec3(0,1,0)) :
-	//						((alternate.x == 0.0) ?
-	//							vec3(0,0,1) :
-	//							vec3(1,1,0));
-						
-	//gl_FragColor = texture2D(source, vec2(center.x, center.y));
-	//gl_FragColor = vec4(C,0,C,1);
-	//gl_FragColor = vec4(center.x, center.y,1,1);
+	
 	
 }
