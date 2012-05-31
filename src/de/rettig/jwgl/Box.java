@@ -50,6 +50,8 @@ public class Box {
 	private int w;
 	private int h;
 
+	private float angle;
+
 	public Box(String texture){
 
 		try {
@@ -112,7 +114,8 @@ public class Box {
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, tex01);
 			ARBShaderObjects.glUniform1iARB(sampler01, 0);
 
-			setGamma(1.0f);
+			setSourceSize(w, h);
+
 		}
 	}
 
@@ -156,7 +159,7 @@ public class Box {
 
 		GL11.glLoadIdentity();
 		GL11.glTranslatef(0.0f, 0.0f, zoom);
-		GL11.glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
+		GL11.glRotatef(angle, 0.0f, 0.0f, 1.0f);
 		GL11.glColor3f(1.0f, 1.0f, 1.0f);//white
 
 		GL11.glBegin(GL11.GL_QUADS);
@@ -177,7 +180,6 @@ public class Box {
 
 		//release the shader
 		ARBShaderObjects.glUseProgramObjectARB(0);
-
 	}
 
 	/*
@@ -225,16 +227,23 @@ public class Box {
 
 	public void setGamma(float g){
 		GL20.glUseProgram(shader);
-		int gamma = ARBShaderObjects.glGetUniformLocationARB(shader, "gamma");
-		gamma = GL20.glGetUniformLocation(shader, "gamma");
+		int gamma = GL20.glGetUniformLocation(shader, "gamma");
 		if (gamma != -1){
-			System.out.println(gamma);
-			//GL20.glUniform1f(gamma, g);
-			//ARBShaderObjects.glUniform1iARB(gamma, (int)g);
 			GL20.glUniform1f(gamma, g);
 		}
 	}
+	
 
+	public void setSourceSize(int w, int h){
+		GL20.glUseProgram(shader);
+		int soureSize = GL20.glGetUniformLocation(shader, "sourceSize");
+		if (soureSize != -1){
+			GL20.glUniform4f(soureSize, (float)w,(float)h,1f/w,1f/h);
+		} else {
+			System.out.println("Could not set sourceSize!");
+		}
+	}
+	
 	//same as per the vertex shader except for method syntax
 	private int createFragShader(String filename){
 
@@ -280,6 +289,10 @@ public class Box {
 		}
 		else return true;
 		return false;
+	}
+
+	public void setRotate(float deg) {
+		angle = deg;		
 	}
 
 }

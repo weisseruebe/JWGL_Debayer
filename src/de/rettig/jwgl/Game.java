@@ -5,10 +5,10 @@ import org.lwjgl.opengl.GL11;
 
 public class Game {
 	private Box box;
-	private float gamma;
+	private float gamma = 0.6f;
 
 	public Game() {
-		box=new Box("res/IMG2000_scaled.png");
+		box=new Box("res/DSC_0303.png");
 	}
 
 	private void pollInput() {
@@ -30,9 +30,21 @@ public class Game {
 					box.setTexFilter(GL11.GL_NEAREST);
 				}
 				if (Keyboard.getEventKey() == Keyboard.KEY_G) {
-					System.out.println("GAMMA "+gamma);
-					gamma += 0.1f;
+					gamma += 0.01f;
 					box.setGamma(gamma);
+				}
+				if (Keyboard.getEventKey() == Keyboard.KEY_H) {
+					gamma -= 0.01f;
+					box.setGamma(gamma);
+				}
+				if (Keyboard.getEventKey() == Keyboard.KEY_1) {
+					box.setRotate(0);
+				}
+				if (Keyboard.getEventKey() == Keyboard.KEY_2) {
+					box.setRotate(90);
+				}
+				if (Keyboard.getEventKey() == Keyboard.KEY_3) {
+					box.setRotate(180);
 				}
 			} else {
 				if (Keyboard.getEventKey() == Keyboard.KEY_A) {

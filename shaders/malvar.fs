@@ -8,16 +8,18 @@ varying vec4 xCoord;
 void main(void) {	
 	#define fetch(x, y) texture2D(source, vec2(x, y)).r
 	
-	float C = texture2D(source, center.xy).r; // ( 0, 0)
+	float C = texture2D(source, center.xy).r; // ( 0, 0) EE:R EO: G OE:G OO:B
 	const vec4 kC = vec4( 4.0, 6.0, 5.0, 5.0) / 8.0;
 	
 	// Determine which of four types of pixels we are on.
 	vec2 alternate = mod(floor(center.zw), 2.0);
+	//Hier ein vec4 mit WB-Faktoren erstellen
+	
 	vec4 Dvec = vec4(
-		fetch(xCoord[1], yCoord[1]), // (-1,-1)
-		fetch(xCoord[1], yCoord[2]), // (-1, 1)
-		fetch(xCoord[2], yCoord[1]), // ( 1,-1)
-		fetch(xCoord[2], yCoord[2]));// ( 1, 1)
+		fetch(xCoord[1], yCoord[1]), // (-1,-1) EE:B EO:G OE:G OO:R
+		fetch(xCoord[1], yCoord[2]), // (-1, 1) EE:B EO:G OE:G OO:R
+		fetch(xCoord[2], yCoord[1]), // ( 1,-1) EE:B EO:G OE:G OO:R
+		fetch(xCoord[2], yCoord[2]));// ( 1, 1) EE:B EO:G OE:G OO:R
 	vec4 PATTERN = (kC.xyz * C).xyzz;
 	
 	// Can also be a dot product with (1,1,1,1) on hardware where that is
@@ -27,16 +29,16 @@ void main(void) {
 	Dvec.x += Dvec.y;
 	
 	vec4 value = vec4(
-		fetch(center.x, yCoord[0]), // ( 0,-2)
-		fetch(center.x, yCoord[1]), // ( 0,-1)
-		fetch(xCoord[0], center.y), // ( 1, 0)
-		fetch(xCoord[1], center.y)); // ( 2, 0)
+		fetch(center.x, yCoord[0]), // ( 0,-2) EE:R EO:G OE:G OO:B
+		fetch(center.x, yCoord[1]), // ( 0,-1) EE:G EO:B OE:R OO:G
+		fetch(xCoord[0], center.y), // ( 1, 0) EE:G EO:R OE:B OO:G
+		fetch(xCoord[1], center.y)); // ( 2,0) EE:R EO:G OE:G OO:B
 	
 	vec4 temp = vec4(
-		fetch(center.x, yCoord[3]), // ( 0, 2)
-		fetch(center.x, yCoord[2]), // ( 0, 1)
-		fetch(xCoord[3], center.y), // ( 2, 0)
-		fetch(xCoord[2], center.y)); // ( 1, 0)
+		fetch(center.x, yCoord[3]), // ( 0, 2) EE:R EO:G OE:G OO:B
+		fetch(center.x, yCoord[2]), // ( 0, 1) EE:G EO:R OE:B OO:G
+		fetch(xCoord[3], center.y), // ( 2, 0) EE:R EO:G OE:G OO:B
+		fetch(xCoord[2], center.y)); //( 1, 0) EE:G EO:R OE:B OO:G
 	
 	// Even the simplest compilers should be able to constant-fold these to avoid the division.
 	// Note that on scalar processors these constants force computation of some identical products twice.
@@ -78,8 +80,7 @@ void main(void) {
 							((alternate.x == 0.0) ?
 								vec3(PATTERN.w, C, PATTERN.z) :
 								vec3(PATTERN.yx, C));
+								
 	gl_FragColor = pow(gl_FragColor,vec4(gamma,gamma,gamma,1.0));
-	
-	
 	
 }

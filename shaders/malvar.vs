@@ -1,6 +1,6 @@
 
 /** (w,h,1/w,1/h) */
-//uniform vec4 sourceSize;
+uniform vec4 sourceSize;
 
 /** Pixel position of the first red pixel in the Bayer pattern. [{0,1}, {0,1}]*/ 
 //uniform vec2 firstRed;
@@ -15,9 +15,8 @@ varying vec4 xCoord;
 varying vec4 yCoord;
 
 void main(void) {
-	vec4 sourceSize = vec4(3906.0,2602.0,1.0/3906.0,1.0/2602.0);
-	vec2 firstRed = vec2(0,0);
-	
+	//vec2 firstRed = vec2(0,0);
+	vec2 firstRed = vec2(0,1);
     gl_TexCoord[0]=gl_MultiTexCoord0;
 	center.xy = gl_MultiTexCoord0.xy;
 	center.zw = gl_MultiTexCoord0.xy * sourceSize.xy + firstRed;
