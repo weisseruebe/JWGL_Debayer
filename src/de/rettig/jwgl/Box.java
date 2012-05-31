@@ -115,6 +115,7 @@ public class Box {
 			ARBShaderObjects.glUniform1iARB(sampler01, 0);
 
 			setSourceSize(w, h);
+			setFirstRed(new int[]{0,1});
 
 		}
 	}
@@ -232,7 +233,18 @@ public class Box {
 			GL20.glUniform1f(gamma, g);
 		}
 	}
+
+	public void setFirstRed(int[] red){
+		GL20.glUseProgram(shader);
+		int firstRed = GL20.glGetUniformLocation(shader, "firstRed");
+		if (firstRed != -1){
+			GL20.glUniform2f(firstRed, red[0], red[1]);
+		} else {
+			System.out.println("Could not set firstRed!");
+		}
+	}
 	
+
 
 	public void setSourceSize(int w, int h){
 		GL20.glUseProgram(shader);

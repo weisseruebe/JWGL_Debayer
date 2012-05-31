@@ -8,7 +8,9 @@ public class Game {
 	private float gamma = 0.6f;
 
 	public Game() {
-		box=new Box("res/DSC_0303.png");
+		box=new Box("res/IMG2000_scaled.png");
+		box.setGamma(gamma);
+		box.setFirstRed(new int[]{0,0});
 	}
 
 	private void pollInput() {
