@@ -15,12 +15,12 @@ loop.
 public class Main{
 
 	private boolean done=false; //game runs until done is set to true
-	private Game game;
+	private Controller game;
 
 	public Main(){
 
 		init();
-		game = new Game();
+		game = new Controller();
 		while(!done){
 			if(Display.isCloseRequested()){
 				done=true;
