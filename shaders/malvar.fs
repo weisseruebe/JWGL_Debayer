@@ -1,6 +1,7 @@
 /** Monochrome RGBA or GL_LUMINANCE Bayer encoded texture.*/
 uniform sampler2D source;
 uniform float gamma;
+uniform vec3 wb;
 varying vec4 center;
 varying vec4 yCoord;
 varying vec4 xCoord;
@@ -80,7 +81,8 @@ void main(void) {
 							((alternate.x == 0.0) ?
 								vec3(PATTERN.w, C, PATTERN.z) :
 								vec3(PATTERN.yx, C));
-								
+
+	gl_FragColor.rgb = gl_FragColor.rgb*wb;
 	gl_FragColor = pow(gl_FragColor,vec4(gamma,gamma,gamma,1.0));
 	
 }

@@ -15,9 +15,7 @@ varying vec4 xCoord;
 varying vec4 yCoord;
 
 void main(void) {
-	//vec2 firstRed = vec2(0,0);
-	//vec2 firstRed = vec2(0,1);
-    gl_TexCoord[0]=gl_MultiTexCoord0;
+	gl_TexCoord[0]=gl_MultiTexCoord0;
 	center.xy = gl_MultiTexCoord0.xy;
 	center.zw = gl_MultiTexCoord0.xy * sourceSize.xy + firstRed;
 	vec2 invSize = sourceSize.zw;
