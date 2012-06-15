@@ -56,14 +56,17 @@ public class DebayerPlane {
 
 	private int y;
 
+	private ByteBuffer buffer;
+
+	private int[] pixels;
+
+	private BufferedImage image;
+
+
 	public DebayerPlane(String texture){
 
 		try {
 			tex01 = setupTextures(texture);
-			BufferedImage f = ImageIO.read(new File(texture));
-			w = f.getWidth();
-			h = f.getHeight();
-
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -78,7 +81,6 @@ public class DebayerPlane {
 		if(shader!=0){
 			vertShader=createVertShader("shaders/malvar.vs");
 			fragShader=createFragShader("shaders/malvar.fs");
-
 		} else {
 			useShader=false;
 		}
@@ -111,7 +113,7 @@ public class DebayerPlane {
 			int sampler01 = ARBShaderObjects.glGetUniformLocationARB(shader, "source");
 
 			if(sampler01==-1){
-				System.out.println("Error accessing sampler01");
+				System.out.println("Error accessing texture source");
 			}
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, tex01);
 			ARBShaderObjects.glUniform1iARB(sampler01, 0);
@@ -123,13 +125,27 @@ public class DebayerPlane {
 		}
 	}
 
-	private int setupTextures(String fileName) throws IOException {
+	public void reload(String texture){
+		try {
+			tex01 = setupTextures(texture);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	public int setupTexturesOld(String fileName) throws IOException {
+		System.out.println("READ");
 		IntBuffer tmp=BufferUtils.createIntBuffer(1);
 		GL11.glGenTextures(tmp);
 		tmp.rewind();
 
 		InputStream in = new FileInputStream(fileName);
 		PNGDecoder decoder = new PNGDecoder(in);
+		h = decoder.getHeight();
+		w = decoder.getWidth();
+
 		ByteBuffer data = ByteBuffer.allocateDirect(4*decoder.getWidth()*decoder.getHeight());
 		decoder.decode(data, decoder.getWidth()*4, PNGDecoder.TextureFormat.RGBA);
 		data.rewind();
@@ -142,6 +158,53 @@ public class DebayerPlane {
 		GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 4);
 
 		tmp.rewind();
+		System.out.println("READY");
+		return tmp.get(0);
+	}
+
+	public int setupTextures(String fileName) throws IOException {
+		System.out.println("READ");
+		image = ImageIO.read(new File(fileName));
+
+		IntBuffer tmp = BufferUtils.createIntBuffer(1);
+		GL11.glGenTextures(tmp);
+		tmp.rewind();
+
+		h=image.getHeight();
+		w=image.getWidth();
+		
+		if (pixels==null){
+			pixels = new int[image.getWidth() * image.getHeight()];
+		}
+		
+		image.getRGB(0, 0, w, h, pixels, 0, w);
+
+		if (buffer==null){
+			buffer = BufferUtils.createByteBuffer(w * h * 4); //4 for RGBA, 3 for RGB
+		} else {
+			buffer.rewind();
+		}
+
+		for(int y = 0; y < h; y++){
+			for(int x = 0; x < w; x++){
+				int pixel = pixels[y * w + x];
+				buffer.put((byte) ((pixel >> 16) & 0xFF));     // Red component
+				buffer.put((byte) ((pixel >> 8) & 0xFF));      // Green component
+				buffer.put((byte) (pixel & 0xFF));             // Blue component
+				buffer.put((byte) ((pixel >> 24) & 0xFF));     // Alpha component. Only for RGBA
+			}
+		}
+
+		buffer.rewind();
+
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, tmp.get(0));
+
+		setTexFilter(GL11.GL_NEAREST);
+
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D,0,GL11.GL_RGBA8,w,h,0,GL11.GL_RGBA,GL11.GL_UNSIGNED_BYTE,buffer);
+
+		tmp.rewind();
+		System.out.println("READY");
 		return tmp.get(0);
 	}
 
@@ -267,7 +330,7 @@ public class DebayerPlane {
 			System.out.println("Could not set sourceSize!");
 		}
 	}
-	
+
 	//same as per the vertex shader except for method syntax
 	private int createFragShader(String filename){
 
