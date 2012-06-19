@@ -96,7 +96,6 @@ public class Controller {
 	}
 	
 	public void tick() {
-//		pollInput();
 		debayerPlane.draw();
 	}
 

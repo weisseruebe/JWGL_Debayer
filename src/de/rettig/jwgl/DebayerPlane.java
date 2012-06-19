@@ -44,24 +44,15 @@ public class DebayerPlane {
 	private int vertShader=0;
 	private int fragShader=0;
 	private int tex01=0;//first texture
-
 	private float zoom = -5;
-
 	private int w;
 	private int h;
-
 	private float angle;
-
 	private int x;
-
 	private int y;
-
 	private ByteBuffer buffer;
-
 	private int[] pixels;
-
 	private BufferedImage image;
-
 
 	public DebayerPlane(String texture){
 
@@ -132,7 +123,6 @@ public class DebayerPlane {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 
 	public int setupTexturesOld(String fileName) throws IOException {
@@ -163,7 +153,6 @@ public class DebayerPlane {
 	}
 
 	public int setupTextures(String fileName) throws IOException {
-		System.out.println("READ");
 		image = ImageIO.read(new File(fileName));
 
 		IntBuffer tmp = BufferUtils.createIntBuffer(1);
@@ -172,6 +161,7 @@ public class DebayerPlane {
 
 		h=image.getHeight();
 		w=image.getWidth();
+		setSourceSize(w, h);
 		
 		if (pixels==null){
 			pixels = new int[image.getWidth() * image.getHeight()];
@@ -204,7 +194,6 @@ public class DebayerPlane {
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D,0,GL11.GL_RGBA8,w,h,0,GL11.GL_RGBA,GL11.GL_UNSIGNED_BYTE,buffer);
 
 		tmp.rewind();
-		System.out.println("READY");
 		return tmp.get(0);
 	}
 
@@ -292,6 +281,10 @@ public class DebayerPlane {
 	public void zoom(float f){
 		zoom += f;
 		zoom = Math.min(-0.1f, zoom);
+	}
+	
+	public void setZoom(float zoom){
+		this.zoom = -zoom;
 	}
 
 	public void setGamma(float g){

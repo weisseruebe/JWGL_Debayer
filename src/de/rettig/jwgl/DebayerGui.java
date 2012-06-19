@@ -11,6 +11,7 @@ import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -21,9 +22,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.opengl.GLCanvas;
 import org.eclipse.swt.opengl.GLData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
@@ -55,6 +59,13 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 
 	private Menu menu1;
 	private Label label1;
+	private Scale scaleZoom;
+	private Composite composite2;
+	private Button button4;
+	private Button button3;
+	private Button button2;
+	private Button button1;
+	private Group group1;
 	static private Composite glComposite;
 	private MenuItem exitMenuItem;
 	private MenuItem openFileMenuItem;
@@ -76,6 +87,7 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 		//handle the obtaining and disposing of resources
 		SWTResourceManager.registerResourceUser(this);
 	}
+
 
 	public DebayerGui(Composite parent, int style) {
 		super(parent, style);
@@ -135,6 +147,23 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 						{
 							openFileMenuItem = new MenuItem(fileMenu, SWT.CASCADE);
 							openFileMenuItem.setText("Open");
+							openFileMenuItem.addSelectionListener(new SelectionListener() {
+								
+								@Override
+								public void widgetSelected(SelectionEvent arg0) {
+									FileDialog fileDialog = new FileDialog(getShell(), SWT.OPEN);
+									String fileName = fileDialog.open();
+									if (fileName!=null){
+										debayerPlane.reload(fileName);
+									}
+								}
+								
+								@Override
+								public void widgetDefaultSelected(SelectionEvent arg0) {
+									// TODO Auto-generated method stub
+									
+								}
+							});
 						}
 						{
 							exitMenuItem = new MenuItem(fileMenu, SWT.CASCADE);
@@ -170,8 +199,112 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 					composite1.setLayoutData(composite1LData);
 					composite1.setLayout(composite1Layout);
 					{
-						GridData scale1LData = new GridData();
+						composite2 = new Composite(composite1, SWT.NONE);
+						FillLayout composite2Layout = new FillLayout(org.eclipse.swt.SWT.HORIZONTAL);
+						GridData composite2LData = new GridData();
+						composite2LData.verticalSpan = 3;
+						composite2LData.verticalAlignment = GridData.FILL;
+						composite2LData.grabExcessVerticalSpace = true;
+						composite2LData.horizontalAlignment = GridData.FILL;
+						composite2LData.grabExcessHorizontalSpace = true;
+						composite2.setLayoutData(composite2LData);
+						composite2.setLayout(composite2Layout);
+					}
+					{
+						label1 = new Label(composite1, SWT.NONE);
+						label1.setText("Gamma");
+						GridData label1LData = new GridData();
+						label1.setLayoutData(label1LData);
+					}
+					{
+						GridData scaleZoomLData = new GridData();
+						scaleZoomLData.heightHint = 15;
+						scaleZoomLData.grabExcessHorizontalSpace = true;
+						scaleZoomLData.horizontalAlignment = GridData.FILL;
+						scaleZoom = new Scale(composite1, SWT.NONE);
+						scaleZoom.setLayoutData(scaleZoomLData);
+						scaleZoom.addSelectionListener(new SelectionAdapter() {
+							public void widgetSelected(SelectionEvent evt) {
+								debayerPlane.setZoom(scaleZoom.getSelection());
+							}
+						});
+					}
+					{
+						group1 = new Group(composite1, SWT.NONE);
+						GridLayout group1Layout = new GridLayout();
+						group1Layout.makeColumnsEqualWidth = true;
+						group1Layout.numColumns = 2;
+						group1.setLayout(group1Layout);
+						group1.setText("First red");
+						{
+							button1 = new Button(group1, SWT.RADIO | SWT.LEFT);
+							GridData button1LData = new GridData();
+							button1.setLayoutData(button1LData);
+							button1.addSelectionListener(new SelectionAdapter() {
+								
+								@Override
+								public void widgetSelected(SelectionEvent arg0) {
+									if (button1.getSelection()){
+										debayerPlane.setFirstRed(new int[]{0,0});
+									}
+								}
+								
+							});
+						}
+						{
+							button2 = new Button(group1, SWT.RADIO | SWT.LEFT);
+							GridData button2LData = new GridData();
+							button2.setLayoutData(button2LData);
+							button2.addSelectionListener(new SelectionAdapter() {
+								
+								@Override
+								public void widgetSelected(SelectionEvent arg0) {
+									if (button2.getSelection()){
+										debayerPlane.setFirstRed(new int[]{0,1});
+									}
+								}
+								
+							});
+							
+						}
+						{
+							button3 = new Button(group1, SWT.RADIO | SWT.LEFT);
+							GridData button3LData = new GridData();
+							button3.setLayoutData(button3LData);
+							button3.addSelectionListener(new SelectionAdapter() {
+								
+								@Override
+								public void widgetSelected(SelectionEvent arg0) {
+									if (button3.getSelection()){
+										debayerPlane.setFirstRed(new int[]{1,0});
+									}
+								}
+								
+							});
+						}
+						{
+							button4 = new Button(group1, SWT.RADIO | SWT.LEFT);
+							GridData button4LData = new GridData();
+							button4.setLayoutData(button4LData);
+							button4.addSelectionListener(new SelectionAdapter() {
+								
+								@Override
+								public void widgetSelected(SelectionEvent arg0) {
+									if (button4.getSelection()){
+										debayerPlane.setFirstRed(new int[]{1,1});
+									}
+								}
+								
+							});
+						}
+					}
+					{
 						scale1 = new Scale(composite1, SWT.NONE);
+						GridData scale1LData = new GridData();
+						scale1LData.heightHint = 15;
+						scale1LData.horizontalAlignment = GridData.CENTER;
+						scale1LData.verticalAlignment = GridData.BEGINNING;
+						scale1LData.grabExcessHorizontalSpace = true;
 						scale1.setLayoutData(scale1LData);
 						scale1.addSelectionListener(new SelectionAdapter() {
 							public void widgetSelected(SelectionEvent evt) {
@@ -181,23 +314,13 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 					}
 
 					{
-						GridData scalableHsvColorChooser1LData = new GridData();
-						scalableHsvColorChooser1LData.widthHint = 144;
-						scalableHsvColorChooser1LData.heightHint = 145;
-						scalableHsvColorChooser1 = new ScalableHsvColorChooser(composite1, SWT.NONE);
-						scalableHsvColorChooser1.setLayoutData(scalableHsvColorChooser1LData);
+						scalableHsvColorChooser1 = new ScalableHsvColorChooser(composite2, SWT.NONE);
 						scalableHsvColorChooser1.addSelectionListener(new SelectionAdapter() {
 							public void widgetSelected(SelectionEvent evt) {
 								Color color = scalableHsvColorChooser1.getRGBColor();
 								debayerPlane.setWB(color.getRed()/255f, color.getGreen()/255f, color.getBlue()/255f);
 							}
 						});
-					}
-					{
-						label1 = new Label(composite1, SWT.NONE);
-						GridData label1LData = new GridData();
-						label1.setLayoutData(label1LData);
-						label1.setText("label1");
 					}
 
 				}
@@ -239,11 +362,11 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 					Robot robot = new Robot();
 					debayerPlane.setWB(1, 1, 1);
 					BufferedImage bi = robot.createScreenCapture(new java.awt.Rectangle(
-									getShell().getBounds().x + arg0.x + 3,
-									getShell().getBounds().y + arg0.y + 22, 10, 10));
+							getShell().getBounds().x + arg0.x + 3,
+							getShell().getBounds().y + arg0.y + 22, 10, 10));
 					Color c = avgColor(bi);
 					float darkest = Math.min(Math.min(c.getRed(), c.getGreen()),c.getBlue());
-					
+
 					scalableHsvColorChooser1.setHSB(java.awt.Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), null));
 					debayerPlane.setWB(darkest/c.getRed(), darkest/c.getGreen(), darkest/c.getBlue());
 				} catch (Exception e) {
@@ -296,7 +419,6 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 		for (int x = 0;x<bi.getWidth();x++){
 			for (int y = 0;y<bi.getHeight();y++){
 				r+=(bi.getRGB(x, y) >> 16) & 0xFF;
-				System.out.println(r);
 				g+=(bi.getRGB(x, y) >> 8) & 0xFF;
 				b+=(bi.getRGB(x, y) ) & 0xFF;
 			}	
