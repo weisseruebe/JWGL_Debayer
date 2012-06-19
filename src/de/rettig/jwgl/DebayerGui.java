@@ -91,15 +91,13 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 
 	public DebayerGui(Composite parent, int style) {
 		super(parent, style);
+		display = getDisplay();
+
 		initGUI();
 		init();
 		debayerPlane=new DebayerPlane("res/pco.png");
 		debayerPlane.setGamma(gamma);
 		debayerPlane.setFirstRed(new int[]{0,0});
-
-		render();
-		display = getDisplay();
-
 		display.asyncExec(new Runnable() {
 			public void run() {
 				if (!canvas.isDisposed()) {
@@ -110,7 +108,8 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 
 					render();
 					canvas.swapBuffers();
-					display.asyncExec(this);
+//					display.asyncExec(this);
+					display.timerExec(20, this);
 				}
 			}
 		});
@@ -451,6 +450,7 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 			if (!display.readAndDispatch())
 				display.sleep();
 		}
+		System.exit(0);
 	}
 
 }
