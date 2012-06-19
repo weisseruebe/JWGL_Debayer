@@ -226,6 +226,7 @@ public class DebayerPlane {
 
 		GL11.glLoadIdentity();
 		GL11.glTranslatef(x/100f, y/100f, zoom);
+
 		GL11.glRotatef(angle, 0.0f, 0.0f, 1.0f);
 		GL11.glColor3f(1.0f, 1.0f, 1.0f);//white
 

@@ -3,7 +3,7 @@ package de.rettig.jwgl;
 import org.lwjgl.input.Keyboard;
 
 public class Controller {
-	private DebayerPlane debayerPlane;
+	DebayerPlane debayerPlane;
 	private float gamma = 0.6f;
 	private float wbR = 1;
 	private float wbG = 1;
@@ -14,6 +14,7 @@ public class Controller {
 	private int numPics = 3;
 
 	public Controller() {
+		
 		debayerPlane=new DebayerPlane("res/pco.png");
 		debayerPlane.setGamma(gamma);
 		debayerPlane.setFirstRed(new int[]{0,0});
@@ -31,7 +32,6 @@ public class Controller {
 			debayerPlane.setPos(--x,y);
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
-			
 			debayerPlane.setPos(++x,y);
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_UP)) {
@@ -96,7 +96,7 @@ public class Controller {
 	}
 	
 	public void tick() {
-		pollInput();
+//		pollInput();
 		debayerPlane.draw();
 	}
 

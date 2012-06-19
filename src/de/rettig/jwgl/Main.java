@@ -3,6 +3,7 @@ package de.rettig.jwgl;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GLContext;
 import org.lwjgl.util.glu.GLU;
 
 /*
@@ -30,8 +31,6 @@ public class Main{
 
 		Display.destroy();
 	}
-
-	
 
 	private void render(){
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
