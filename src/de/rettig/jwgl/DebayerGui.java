@@ -209,8 +209,6 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 	}
 
 	private void init(){
-		int w=1024;
-		int h=768;
 		GLData data = new GLData ();
 		data.doubleBuffer = true;
 		canvas = new GLCanvas(glComposite, SWT.NONE, data);
@@ -239,15 +237,16 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 			public void mouseDoubleClick(MouseEvent arg0) {
 				try {
 					Robot robot = new Robot();
+					debayerPlane.setWB(1, 1, 1);
 					BufferedImage bi = robot.createScreenCapture(new java.awt.Rectangle(
 									getShell().getBounds().x + arg0.x + 3,
 									getShell().getBounds().y + arg0.y + 22, 10, 10));
 					Color c = avgColor(bi);
-					label1.setBackground(SWTResourceManager.getColor(c.getRed(), c.getGreen(), c.getBlue()));
-					debayerPlane.setWB(255f/c.getRed(), 255f/c.getGreen(), 255f/c.getBlue());
-					//					ImageIO.write(bi, "jpg", new File("./imageTest.jpg"));
+					float darkest = Math.min(Math.min(c.getRed(), c.getGreen()),c.getBlue());
+					
+					scalableHsvColorChooser1.setHSB(java.awt.Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), null));
+					debayerPlane.setWB(darkest/c.getRed(), darkest/c.getGreen(), darkest/c.getBlue());
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -274,7 +273,7 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 				GL11.glMatrixMode(GL11.GL_PROJECTION);
 				GL11.glLoadIdentity();
 				GLU.gluPerspective(45.0f, fAspect, 0.5f, 400.0f);
-				//			    GLU.gluOrtho2D(0.0f, bounds.width, bounds.height, 0.0f);
+				//GLU.gluOrtho2D(0.0f, bounds.width, bounds.height, 0.0f);
 				//GL11.glTranslatef(0.375f, 0.375f,1.0f);
 				GL11.glDisable(GL11.GL_DEPTH_TEST);
 
