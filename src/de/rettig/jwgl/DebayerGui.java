@@ -15,9 +15,6 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.layout.FormData;
-import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.opengl.GLCanvas;
@@ -29,6 +26,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
@@ -42,20 +40,8 @@ import org.lwjgl.util.glu.GLU;
 import com.cloudgarden.resource.SWTResourceManager;
 
 import de.mwa.flashscan.gui.widgets.ScalableHsvColorChooser;
-import org.eclipse.swt.widgets.List;
 
-/**
- * This code was edited or generated using CloudGarden's Jigloo
- * SWT/Swing GUI Builder, which is free for non-commercial
- * use. If Jigloo is being used commercially (ie, by a corporation,
- * company or business for any purpose whatever) then you
- * should purchase a license for each developer using Jigloo.
- * Please visit www.cloudgarden.com for details.
- * Use of Jigloo implies acceptance of these licensing terms.
- * A COMMERCIAL LICENSE HAS NOT BEEN PURCHASED FOR
- * THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
- * LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
- */
+
 public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 
 	private Menu menu1;
@@ -94,12 +80,12 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 
 
 	public DebayerGui(Composite parent, int style) {
-		super(parent, style);
+		super(parent, SWT.NONE);
 		display = getDisplay();
 
 		initGUI();
 		init();
-		debayerPlane=new DebayerPlane("res/pco.png");
+		debayerPlane=new DebayerPlane("res/DSC_0303.png");
 		debayerPlane.setGamma(gamma);
 		debayerPlane.setFirstRed(new int[]{0,0});
 		display.asyncExec(new Runnable() {
@@ -112,7 +98,6 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 
 					render();
 					canvas.swapBuffers();
-//					display.asyncExec(this);
 					display.timerExec(20, this);
 				}
 			}
@@ -134,6 +119,7 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 	 */
 	private void initGUI() {
 		try {
+			getShell().setText("GLSL Demosaic");
 			this.setSize(new org.eclipse.swt.graphics.Point(400,300));
 			this.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_DARK_GRAY));
 
@@ -149,7 +135,7 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 							openFileMenuItem = new MenuItem(fileMenu, SWT.CASCADE);
 							openFileMenuItem.setText("Open");
 							openFileMenuItem.addSelectionListener(new SelectionListener() {
-								
+
 								@Override
 								public void widgetSelected(SelectionEvent arg0) {
 									FileDialog fileDialog = new FileDialog(getShell(), SWT.OPEN);
@@ -158,11 +144,11 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 										debayerPlane.reload(fileName);
 									}
 								}
-								
+
 								@Override
 								public void widgetDefaultSelected(SelectionEvent arg0) {
 									// TODO Auto-generated method stub
-									
+
 								}
 							});
 						}
@@ -181,7 +167,7 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 					gd_composite_1.minimumWidth = 100;
 					gd_composite_1.widthHint = 106;
 					composite_1.setLayoutData(gd_composite_1);
-					
+
 					List list = new List(composite_1, SWT.BORDER);
 					list.setItems(new String[] {});
 				}
@@ -222,7 +208,7 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 							label1.setForeground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
 							label1.setText("Gamma");
 						}
-						
+
 						Label lblZoom = new Label(composite, SWT.NONE);
 						lblZoom.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
 						lblZoom.setForeground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
@@ -256,45 +242,45 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 								button1 = new Button(group1, SWT.RADIO | SWT.LEFT);
 								button1.setSelection(true);
 								button1.addSelectionListener(new SelectionAdapter() {
-									
+
 									@Override
 									public void widgetSelected(SelectionEvent arg0) {
 										if (button1.getSelection()){
 											debayerPlane.setFirstRed(new int[]{0,0});
 										}
 									}
-									
+
 								});
 							}
 							{
 								button2 = new Button(group1, SWT.RADIO | SWT.LEFT);
 								button2.addSelectionListener(new SelectionAdapter() {
-									
+
 									@Override
 									public void widgetSelected(SelectionEvent arg0) {
 										if (button2.getSelection()){
 											debayerPlane.setFirstRed(new int[]{0,1});
 										}
 									}
-									
+
 								});
-								
+
 							}
 							{
 								button3 = new Button(group1, SWT.RADIO | SWT.LEFT);
 								button3.addSelectionListener(new SelectionAdapter() {
-									
+
 									@Override
 									public void widgetSelected(SelectionEvent arg0) {
 										if (button3.getSelection()){
 											debayerPlane.setFirstRed(new int[]{1,0});
 										}
 									}
-									
+
 								});
 							}
 							button4 = new Button(group1, SWT.RADIO | SWT.LEFT);
-							
+
 							Button btnRotate = new Button(composite, SWT.NONE);
 							btnRotate.addSelectionListener(new SelectionAdapter() {
 								@Override
@@ -306,19 +292,15 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 							btnRotate.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 							btnRotate.setText("Rotate");
 							button4.addSelectionListener(new SelectionAdapter() {
-								
+
 								@Override
 								public void widgetSelected(SelectionEvent arg0) {
 									if (button4.getSelection()){
 										debayerPlane.setFirstRed(new int[]{1,1});
 									}
 								}
-								
+
 							});
-						}
-						{
-							{
-							}
 						}
 					}
 
