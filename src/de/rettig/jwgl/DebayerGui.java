@@ -3,6 +3,8 @@ package de.rettig.jwgl;
 import java.awt.Color;
 import java.awt.Robot;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FilenameFilter;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
@@ -40,6 +42,7 @@ import org.lwjgl.util.glu.GLU;
 import com.cloudgarden.resource.SWTResourceManager;
 
 import de.mwa.flashscan.gui.widgets.ScalableHsvColorChooser;
+import org.eclipse.swt.widgets.Combo;
 
 
 public class DebayerGui extends org.eclipse.swt.widgets.Composite {
@@ -71,6 +74,11 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 	private Composite composite;
 	private Composite composite_1;
 	protected int rotation;
+	private List listFiles;
+	protected String baseDir;
+	private Label lblScale;
+	private Label lblBlackClip;
+	private Scale scaleScale;
 
 	{
 		//Register as a resource user - SWTResourceManager will
@@ -85,7 +93,9 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 
 		initGUI();
 		init();
-		debayerPlane=new DebayerPlane("res/DSC_0303.png");
+		baseDir = "res/nikon/";
+		fillFileList(baseDir);
+		debayerPlane=new DebayerPlane("res/nikon/DSC_0667.png");
 		debayerPlane.setGamma(gamma);
 		debayerPlane.setFirstRed(new int[]{0,0});
 		display.asyncExec(new Runnable() {
@@ -102,6 +112,22 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 				}
 			}
 		});
+	}
+	
+	
+	
+
+	private void fillFileList(String dirName) {
+		FilenameFilter pngFilter = new FilenameFilter() {
+		    public boolean accept(File dir, String name) {
+		        return name.endsWith(".png");
+		    }
+		};
+		
+		File dir = new File(dirName);
+		String[] files = dir.list(pngFilter);
+		listFiles.setItems(files);
+		
 	}
 
 	private void render(){
@@ -120,7 +146,7 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 	private void initGUI() {
 		try {
 			getShell().setText("GLSL Demosaic");
-			this.setSize(new org.eclipse.swt.graphics.Point(400,300));
+			this.setSize(new Point(529, 331));
 			this.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_DARK_GRAY));
 
 			{
@@ -168,8 +194,13 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 					gd_composite_1.widthHint = 106;
 					composite_1.setLayoutData(gd_composite_1);
 
-					List list = new List(composite_1, SWT.BORDER);
-					list.setItems(new String[] {});
+					listFiles = new List(composite_1, SWT.BORDER);
+					listFiles.addSelectionListener(new SelectionAdapter() {
+						public void widgetSelected(SelectionEvent evt) {
+							String fileName = listFiles.getSelection()[0];
+							debayerPlane.reload(baseDir+fileName);
+						}
+					});
 				}
 				{
 					glComposite = new Composite(this, SWT.NONE);
@@ -192,7 +223,7 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 						composite2LData.widthHint = 120;
 						composite2LData.heightHint = 102;
 						composite2LData.verticalAlignment = GridData.FILL;
-						composite2LData.horizontalAlignment = SWT.LEFT;
+						composite2LData.horizontalAlignment = SWT.FILL;
 						composite2.setLayoutData(composite2LData);
 						composite2.setLayout(composite2Layout);
 					}
@@ -225,9 +256,46 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 						scaleZoom.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 						scaleZoom.addSelectionListener(new SelectionAdapter() {
 							public void widgetSelected(SelectionEvent evt) {
-								debayerPlane.setZoom(scaleZoom.getSelection());
+								debayerPlane.setZoom(scaleZoom.getSelection()/10f);
 							}
 						});
+						
+						lblBlackClip = new Label(composite, SWT.NONE);
+						lblBlackClip.setText("Black Clip");
+						lblBlackClip.setForeground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
+						lblBlackClip.setFont(org.eclipse.wb.swt.SWTResourceManager.getFont("Tahoma", 11, SWT.NORMAL));
+						lblBlackClip.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+						new Label(composite, SWT.NONE);
+						
+						final Scale scale = new Scale(composite, SWT.NONE);
+						scale.addSelectionListener(new SelectionAdapter() {
+							@Override
+							public void widgetSelected(SelectionEvent arg0) {
+								debayerPlane.setBlackClip(scale.getSelection()/50f);
+							}
+						});
+						scale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+						new Label(composite, SWT.NONE);
+						
+						lblScale = new Label(composite, SWT.NONE);
+						lblScale.setText("Scale");
+						lblScale.setForeground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WHITE));
+						lblScale.setFont(org.eclipse.wb.swt.SWTResourceManager.getFont("Tahoma", 11, SWT.NORMAL));
+						lblScale.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+						new Label(composite, SWT.NONE);
+						
+						scaleScale = new Scale(composite, SWT.NONE);
+						scaleScale.setMaximum(100);
+						scaleScale.setMinimum(1);
+						
+						scaleScale.addSelectionListener(new SelectionAdapter() {
+							@Override
+							public void widgetSelected(SelectionEvent arg0) {
+								debayerPlane.setScale(1+scaleScale.getSelection()/10f);
+							}
+						});
+						scaleScale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+						new Label(composite, SWT.NONE);
 						{
 							group1 = new Group(composite, SWT.NONE);
 							group1.setBackground(org.eclipse.wb.swt.SWTResourceManager.getColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
@@ -262,9 +330,7 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 											debayerPlane.setFirstRed(new int[]{0,1});
 										}
 									}
-
 								});
-
 							}
 							{
 								button3 = new Button(group1, SWT.RADIO | SWT.LEFT);
@@ -276,7 +342,6 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 											debayerPlane.setFirstRed(new int[]{1,0});
 										}
 									}
-
 								});
 							}
 							button4 = new Button(group1, SWT.RADIO | SWT.LEFT);
@@ -299,7 +364,6 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 										debayerPlane.setFirstRed(new int[]{1,1});
 									}
 								}
-
 							});
 						}
 					}
@@ -388,8 +452,6 @@ public class DebayerGui extends org.eclipse.swt.widgets.Composite {
 				GL11.glMatrixMode(GL11.GL_PROJECTION);
 				GL11.glLoadIdentity();
 				GLU.gluPerspective(45.0f, fAspect, 0.5f, 400.0f);
-				//GLU.gluOrtho2D(0.0f, bounds.width, bounds.height, 0.0f);
-				//GL11.glTranslatef(0.375f, 0.375f,1.0f);
 				GL11.glDisable(GL11.GL_DEPTH_TEST);
 
 				GL11.glMatrixMode(GL11.GL_MODELVIEW);

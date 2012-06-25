@@ -1,6 +1,7 @@
 package de.rettig.jwgl;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -112,6 +113,7 @@ public class DebayerPlane {
 			setSourceSize(w, h);
 			setFirstRed(new int[]{0,1});
 			setWB(1,1,1);
+			setScale(1);
 
 		}
 	}
@@ -148,13 +150,15 @@ public class DebayerPlane {
 		GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 4);
 
 		tmp.rewind();
-		System.out.println("READY");
+		System.out.println("READ READY");
 		return tmp.get(0);
 	}
 
 	public int setupTextures(String fileName) throws IOException {
+		long t = System.currentTimeMillis();
 		image = ImageIO.read(new File(fileName));
-
+		System.out.println("Time to read:"+(System.currentTimeMillis()-t));
+		
 		IntBuffer tmp = BufferUtils.createIntBuffer(1);
 		GL11.glGenTextures(tmp);
 		tmp.rewind();
@@ -170,7 +174,7 @@ public class DebayerPlane {
 		image.getRGB(0, 0, w, h, pixels, 0, w);
 
 		if (buffer==null){
-			buffer = BufferUtils.createByteBuffer(w * h * 4); //4 for RGBA, 3 for RGB
+			buffer = BufferUtils.createByteBuffer(w * h * 4);  //4 for RGBA, 3 for RGB
 		} else {
 			buffer.rewind();
 		}
@@ -179,21 +183,21 @@ public class DebayerPlane {
 			for(int x = 0; x < w; x++){
 				int pixel = pixels[y * w + x];
 				buffer.put((byte) ((pixel >> 16) & 0xFF));     // Red component
-				buffer.put((byte) ((pixel >> 8) & 0xFF));      // Green component
+				buffer.put((byte) ((pixel >> 8)  & 0xFF));     // Green component
 				buffer.put((byte) (pixel & 0xFF));             // Blue component
 				buffer.put((byte) ((pixel >> 24) & 0xFF));     // Alpha component. Only for RGBA
 			}
 		}
 
 		buffer.rewind();
-
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, tmp.get(0));
-
 		setTexFilter(GL11.GL_NEAREST);
-
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D,0,GL11.GL_RGBA8,w,h,0,GL11.GL_RGBA,GL11.GL_UNSIGNED_BYTE,buffer);
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D,0,GL11.GL_RGBA8,w,h,0,GL11.GL_RGBA,GL11.GL_UNSIGNED_BYTE, buffer);
 
 		tmp.rewind();
+		
+		System.out.println("Time to transfer:"+(System.currentTimeMillis()-t));
+
 		return tmp.get(0);
 	}
 
@@ -214,7 +218,7 @@ public class DebayerPlane {
 		float aspect = (float)h/w;
 
 		GL11.glLoadIdentity();
-		GL11.glTranslatef(x/100f, y/100f, zoom);
+		GL11.glTranslatef(x/100f, y/100f, -0.5f+zoom);
 
 		GL11.glRotatef(angle, 0.0f, 0.0f, 1.0f);
 		GL11.glColor3f(1.0f, 1.0f, 1.0f);//white
@@ -280,11 +284,12 @@ public class DebayerPlane {
 
 	public void zoom(float f){
 		zoom += f;
-		zoom = Math.min(-0.1f, zoom);
+		zoom = Math.min(0.0f, zoom);
 	}
 	
-	public void setZoom(float zoom){
-		this.zoom = -zoom;
+	public void setZoom(float zoom){		
+		this.zoom = Math.min(0.0f, -zoom);
+
 	}
 
 	public void setGamma(float g){
@@ -292,6 +297,18 @@ public class DebayerPlane {
 		int gamma = GL20.glGetUniformLocation(shader, "gamma");
 		if (gamma != -1){
 			GL20.glUniform1f(gamma, g);
+		} else {
+			System.out.println("Could not set gamma!");
+		}
+	}
+
+	public void setScale(float scale){
+		GL20.glUseProgram(shader);
+		int gamma = GL20.glGetUniformLocation(shader, "scale");
+		if (gamma != -1){
+			GL20.glUniform1f(gamma, scale);
+		} else {
+			System.out.println("Could not set scale!");
 		}
 	}
 
@@ -309,7 +326,7 @@ public class DebayerPlane {
 		GL20.glUseProgram(shader);
 		int wb = GL20.glGetUniformLocation(shader, "wb");
 		if (wb != -1){
-			GL20.glUniform3f(wb, wbR,wbG,wbB);
+			GL20.glUniform3f(wb, wbR, wbG, wbB);
 		} else {
 			System.out.println("Could not set WB!");
 		}
@@ -373,12 +390,21 @@ public class DebayerPlane {
 	}
 
 	public void setRotate(float deg) {
-		angle = deg;		
-	}
+		angle = deg;	}
 
 	public void setPos(int x, int y) {
 		this.x = x;
 		this.y = y;
+	}
+
+	public void setBlackClip(float f) {
+		GL20.glUseProgram(shader);
+		int blackClip = GL20.glGetUniformLocation(shader, "blackClip");
+		if (blackClip != -1){
+			GL20.glUniform1f(blackClip, f);
+		} else {
+			System.out.println("Could not set blackClip!");
+		}
 	}
 
 }
